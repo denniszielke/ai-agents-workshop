@@ -3,9 +3,16 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+
+src/li**
+src/sk**
+src/web**
+src/lg-agents-02**
+
 # C extensions
 *.so
-
+**/.DS_Store
+scratch.txt
 # Distribution / packaging
 .Python
 build/
