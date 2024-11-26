@@ -1,0 +1,9 @@
+openai==1.55.1
+pydantic==2.9.2
+python-dotenv==1.0.1
+streamlit==1.40.1
+azure-identity==1.19.0
+llama-index==0.12.1
+llama-index-core==0.12.1
+llama-deploy==0.3.4
+llama-index-llms-azure-openai==0.3.0
