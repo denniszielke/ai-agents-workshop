@@ -14,6 +14,9 @@ param resourceGroupName string = ''
 param containerAppsEnvironmentName string = ''
 param containerRegistryName string = ''
 param openaiName string = ''
+param cosmosDbAccountName string = ''
+param cosmosDatabaseName string = 'warehouse'
+param cosmosContainerName string = 'products'
 param applicationInsightsDashboardName string = ''
 param applicationInsightsName string = ''
 param logAnalyticsName string = ''
@@ -95,6 +98,17 @@ module openai './ai/openai.bicep' = {
     name: !empty(openaiName) ? openaiName : '${abbrs.cognitiveServicesAccounts}${resourceToken}'
     deployments: modelDeployments
     capacity: openaiCapacity
+  }
+}
+module cosmodDb './core/data/cosmosdb.bicep' = {
+  name: 'sql'
+  scope: resourceGroup
+  params: {
+    location: location
+    accountName: !empty(cosmosDbAccountName) ? cosmosDbAccountName : '${abbrs.cosmosDbAccount}${resourceToken}'
+    databaseName: cosmosDatabaseName
+    containerName: cosmosContainerName
+    tags: tags
   }
 }
 
