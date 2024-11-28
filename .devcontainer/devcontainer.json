@@ -41,7 +41,10 @@
         }
     },
     "forwardPorts": [
-        8000
+        4501,
+        8000,
+        8001,
+        8002
     ],
     "postAttachCommand": "",
     "postCreateCommand": "pip3 install --user -r requirements.txt",
@@ -51,6 +54,9 @@
         "cpus": 4
     },
     "portsAttributes": {
+        "4501": {
+            "label": "Llama deploy"
+        },
         "8000": {
             "label": "Streamlit UI"
         }

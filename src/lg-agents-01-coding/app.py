@@ -8,27 +8,50 @@ from pydantic import BaseModel, Field
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from langchain_core.messages import BaseMessage, SystemMessage
 
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter
+from openinference.instrumentation.langchain import LangChainInstrumentor
+from opentelemetry import trace, trace as trace_api
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.langchain import LangchainInstrumentor
+from opentelemetry.sdk import trace as trace_sdk
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
 dotenv.load_dotenv()
 
 st.title("💬 AI agentic code reviewer")
 st.caption("🚀 A set of agents that can generate, review and execute code")
 
+@st.cache_resource
+def setup_tracing():
+    exporter = AzureMonitorTraceExporter.from_connection_string(
+        os.environ["APPLICATIONINSIGHTS_CONNECTION_STRING"]
+    )
+    tracer_provider = TracerProvider()
+    trace.set_tracer_provider(tracer_provider)
+    tracer = trace.get_tracer(__name__)
+    span_processor = BatchSpanProcessor(exporter, schedule_delay_millis=60000)
+    trace.get_tracer_provider().add_span_processor(span_processor)
+    LangchainInstrumentor().instrument()
+    return tracer
+
+def get_session_id() -> str:
+    id = random.randint(0, 1000000)
+    return "00000000-0000-0000-0000-" + str(id).zfill(12)
+
+@st.cache_resource
+def create_session(st: st) -> None:
+    if "session_id" not in st.session_state:
+        st.session_state["session_id"] = get_session_id()
+        print("started new session: " + st.session_state["session_id"])
+        st.write("You are running in session: " + st.session_state["session_id"])
+
+tracer = setup_tracing()
+create_session(st)
+
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-
-for message in st.session_state.chat_history:
-    if isinstance(message, HumanMessage):
-        with st.chat_message("Human"):
-            st.markdown(message.content)
-    elif isinstance(message, AIMessage):
-        with st.chat_message("AI"):
-            st.markdown(message.content)
-    elif isinstance(message, ToolMessage):
-        with st.chat_message("Tool"):
-            st.markdown(message.content)
-    else:
-        with st.chat_message("Agent"):
-            st.markdown(message.content)
 
 model: AzureChatOpenAI = None
 if "AZURE_OPENAI_API_KEY" in os.environ:
@@ -206,26 +229,26 @@ if human_query is not None and human_query != "":
     with st.chat_message("Human"):
         st.markdown(human_query)
 
-    for event in app.stream(inputs, config):       
-        print ("message: ")
-        for value in event.values():
-            print("streaming")
-            # print(value)
+    with tracer.start_as_current_span("agent-chain") as span:
+        for event in app.stream(inputs, config):       
+            print ("message: ")
+            for value in event.values():
+                print("streaming")
 
-            if ( value["messages"].__len__() > 0 ):
-                for message in value["messages"]:
-                    if (message.content.__len__() > 0):
-                        if (message.id in messages):
-                            continue
+                if ( value["messages"].__len__() > 0 ):
+                    for message in value["messages"]:
+                        if (message.content.__len__() > 0):
+                            if (message.id in messages):
+                                continue
 
-                        messages[message.id] = True
+                            messages[message.id] = True
 
-                        if ( isinstance(message, AIMessage) ):
-                            with st.chat_message("AI"):
-                                st.write(message.content)
-                        elif ( isinstance(message, SystemMessage) ):
-                            with st.chat_message("human"):
-                                st.write(message.content)
-                        else:
-                            with st.chat_message("Agent"):
-                                st.write(message.content)
+                            if ( isinstance(message, AIMessage) ):
+                                with st.chat_message("AI"):
+                                    st.write(message.content)
+                            elif ( isinstance(message, SystemMessage) ):
+                                with st.chat_message("human"):
+                                    st.write(message.content)
+                            else:
+                                with st.chat_message("Agent"):
+                                    st.write(message.content)
