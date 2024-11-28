@@ -35,24 +35,17 @@ bash ./azd-hooks/deploy.sh web $AZURE_ENV_NAME
 
 ```
 
-## Start locally
 
-```
-python -m streamlit run app.py --server.port=8000
-```
+# Workshop agenda
 
-## Deploy resources for streamlit 
+The scope of this workshop covers the following scenarios and technology stacks:
 
-Run the following script
-
-```
-azd env get-values | grep AZURE_ENV_NAME
-source <(azd env get-values | grep AZURE_ENV_NAME)
-bash ./azd-hooks/deploy.sh web $AZURE_ENV_NAME
-```
-
-
-# Workshop objectives
-
-## Lesson one: Implement react based tool agent
-
+| Name | Description | Technology  |
+| :-- | :--| :-- |
+| [lc-react-tools](./src/lc-react-tools/Readme.md) | Single Agent: Implementation of a react based scenarios to leverage multiple tools | Streamlit, Azure OpenAI, Langchain |
+| [lg-agents-01-coding:](./src/lg-agents-01-coding:/Readme.md) | Iterative code reviews | LangGraph, Azure OpenAI |
+| [lg-agents-02-shop:](./src/lg-agents-02-shop:/Readme.md) | Human in the loop | LangGraph, Qdrant, Azure OpenAI |
+| [li-workflows-01-simple](./src/li-workflows-01-simple/Readme.md) | Simple event driven workflow | Llama agents, Azure OpenAI |
+| [li-workflows-02-events](./src/li-workflows-02-events/Readme.md) | Event driven agent collaboration | Llama agents, Azure OpenAI |
+| [sk-agents-01-collaboration](./src/sk-agents-01-collaboration/Readme.md) | Simple mult agent discussion | Semantic kernel, Azure OpenAI |
+| [sk-agents-02-creative](./src/sk-agents-02-creative/Readme.md) | Multi-turn multi agent discussion | Semantic kernel, Azure OpenAI |

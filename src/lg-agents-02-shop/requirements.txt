@@ -1,0 +1,14 @@
+openai==1.55.1
+pydantic==2.10.1
+python-dotenv==1.0.1
+streamlit==1.40.1
+azure-identity==1.19.0
+langchain==0.3.8
+langchain-core==0.3.21
+langchain-community==0.3.8
+langchain-openai==0.2.9
+langchain-qdrant==0.2.0
+qdrant-client==1.12.1
+langgraph==0.2.53
+langgraph-checkpoint==2.0.5
+beautifulsoup4==4.12.3

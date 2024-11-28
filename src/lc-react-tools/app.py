@@ -111,7 +111,7 @@ Thought: you should always think about what to do
 
 Action: the action to take, should be one of [{tool_names}] or no action at all. Make sure that Actions are not commands. They should be the name of the tool to use.
 
-Action Input: the input to the action according to the tool signature, if a tool should be used
+Action Input: the input to the action according to the tool signature, if a tool should be used.
 
 Observation: the result of the action
 

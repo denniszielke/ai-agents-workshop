@@ -65,10 +65,6 @@ class Statement(BaseModel):
         ...,
         description="The reasoning behind the response",
     )
-    certainty: float = Field(
-        ...,
-        description="The certainty of the correctness of the response",
-    )
 
 def model_response(input) -> Statement:
     completion = model.beta.chat.completions.parse(
