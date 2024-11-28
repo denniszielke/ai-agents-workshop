@@ -58,14 +58,31 @@ for message in st.session_state.chat_history:
 
 llm: AzureChatOpenAI = None
 if "AZURE_OPENAI_API_KEY" in os.environ:
-    llm = AzureChatOpenAI(
-        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-        azure_deployment=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),
-        openai_api_version=os.getenv("AZURE_OPENAI_VERSION"),
-        temperature=0,
-        streaming=False,
-    )
+        # it seems codespaces messes with the proxy settings
+    if "CODESPACES" in os.environ:
+        from openai import DefaultHttpxClient
+        import httpx
+        http_client=DefaultHttpxClient()
+        ahttp_client=httpx.AsyncClient()
+        llm = AzureChatOpenAI(
+            http_client=http_client,
+            http_async_client=ahttp_client,
+            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+            azure_deployment=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),
+            openai_api_version=os.getenv("AZURE_OPENAI_VERSION"),
+            temperature=0,
+            streaming=False,
+        )
+    else:
+        llm = AzureChatOpenAI(
+            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+            azure_deployment=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),
+            openai_api_version=os.getenv("AZURE_OPENAI_VERSION"),
+            temperature=0,
+            streaming=False
+        )
     embeddings_model = AzureOpenAIEmbeddings(    
         azure_deployment = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"),
         openai_api_version = os.getenv("AZURE_OPENAI_VERSION"),
