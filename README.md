@@ -52,4 +52,5 @@ The scope of this workshop covers the following scenarios and technology stacks:
 | [li-workflows-01-simple](./src/li-workflows-01-simple/Readme.md) | Simple event driven workflow | Llama agents, Azure OpenAI |
 | [li-workflows-02-events](./src/li-workflows-02-events/Readme.md) | Event driven agent collaboration | Llama agents, Azure OpenAI |
 | [sk-agents-01-collaboration](./src/sk-agents-01-collaboration/Readme.md) | Simple mult agent discussion | Semantic kernel, Azure OpenAI |
-| [sk-agents-02-creative](./src/sk-agents-02-creative/Readme.md) | Multi-turn multi agent discussion | Semantic kernel, Azure OpenAI |
+| [sk-agents-02-tools](./src/sk-agents-02-tools/Readme.md) | Using tools from agents | Semantic kernel, Azure OpenAI |
+| [sk-agents-03-creative](./src/sk-agents-03-creative/Readme.md) | Multi-turn multi agent discussion | Semantic kernel, Azure OpenAI |

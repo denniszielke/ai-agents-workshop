@@ -1,4 +1,4 @@
-# sk-agents-02-creative: Multi-turn multi agent discussion
+# sk-agents-03-creative: Multi-turn multi agent discussion
 
 Prep:
 ```

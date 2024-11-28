@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
-
+import os
+import dotenv
 import asyncio
 import logging
 
@@ -20,6 +21,7 @@ from semantic_kernel.kernel import Kernel
 # and the model.                                                  #
 ###################################################################
 
+dotenv.load_dotenv()
 
 # NOTE: This is all that is required to enable logging
 logging.basicConfig(level=logging.DEBUG)
@@ -54,7 +56,13 @@ Consider suggestions when refining an idea.
 
 def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
     kernel = Kernel()
-    kernel.add_service(AzureChatCompletion(service_id=service_id))
+    chat_completion_service = AzureChatCompletion(
+        deployment_name=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),  
+        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+        endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"), # Used to point to your service
+        service_id=service_id, # Optional; for targeting specific services within Semantic Kernel
+    )
+    kernel.add_service(chat_completion_service)
     return kernel
 
 

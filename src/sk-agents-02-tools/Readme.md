@@ -1,4 +1,4 @@
-# sk-agents-02-creative: Multi-turn multi agent discussion
+# sk-agents-02-tools: Using tools for agents
 
 Prep:
 ```
@@ -13,7 +13,8 @@ python app.py
 
 ## Objective:
 
-The objective is to learn how to set up agent to agent discussion
+The objective is to learn how to set up agent to agent discussion with tools
 
 ## Tasks:
+
 

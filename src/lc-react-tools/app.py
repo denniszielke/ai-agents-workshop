@@ -33,14 +33,16 @@ if "session_id" not in st.session_state:
     st.write("You are running in session: " + st.session_state["session_id"])
 
 llm: AzureChatOpenAI = None
+
+from openai import DefaultHttpxClient
+import httpx
+http_client=DefaultHttpxClient()
+ahttp_client=httpx.AsyncClient()
+
 if "AZURE_OPENAI_API_KEY" in os.environ:
 
     # it seems codespaces messes with the proxy settings
     if "CODESPACES" in os.environ:
-        from openai import DefaultHttpxClient
-        import httpx
-        http_client=DefaultHttpxClient()
-        ahttp_client=httpx.AsyncClient()
         llm = AzureChatOpenAI(
             http_client=http_client,
             http_async_client=ahttp_client,
@@ -63,6 +65,8 @@ if "AZURE_OPENAI_API_KEY" in os.environ:
 else:
     token_provider = get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
     llm = AzureChatOpenAI(
+        http_client=http_client,
+        http_async_client=ahttp_client,
         azure_ad_token_provider=token_provider,
         azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
         azure_deployment=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),

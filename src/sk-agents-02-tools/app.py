@@ -1,74 +1,72 @@
 # Copyright (c) Microsoft. All rights reserved.
-
-import asyncio
 import os
 import dotenv
+import asyncio
+from typing import Annotated
 
-from openai import AsyncOpenAI
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
-from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.file_reference_content import FileReferenceContent
-from semantic_kernel.contents.image_content import ImageContent
-from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 
-#####################################################################
-# The following sample demonstrates how to create an OpenAI         #
-# assistant using either Azure OpenAI or OpenAI and leverage the    #
-# multi-modal content types to have the assistant describe images   #
-# and answer questions about them.                                  
 ###################################################################
 # The following sample demonstrates how to create a simple,       #
-# agent group chat that utilizes a Reviewer Chat Completion       #
-# Agent along with a Writer Chat Completion Agent to              #
-# complete a user's task.                                         #
+# non-group agent that utilizes plugins defined as part of        #
+# the Kernel.                                                     #
 ###################################################################
 
 dotenv.load_dotenv()
 
+# This sample allows for a streaming response verus a non-streaming response
+streaming = True
+
+# Define the agent name and instructions
 HOST_NAME = "Host"
 HOST_INSTRUCTIONS = "Answer questions about the menu."
 
 
-def create_message_with_image_url(input: str, url: str) -> ChatMessageContent:
-    return ChatMessageContent(
-        role=AuthorRole.USER,
-        items=[TextContent(text=input), ImageContent(uri=url)],
-    )
+# Define a sample plugin for the sample
+class MenuPlugin:
+    """A sample Menu Plugin used for the concept sample."""
 
+    @kernel_function(description="Provides a list of specials from the menu.")
+    def get_specials(self) -> Annotated[str, "Returns the specials from the menu."]:
+        return """
+        Special Soup: Clam Chowder
+        Special Salad: Cobb Salad
+        Special Drink: Chai Tea
+        """
 
-def create_message_with_image_reference(input: str, file_id: str) -> ChatMessageContent:
-    return ChatMessageContent(
-        role=AuthorRole.USER,
-        items=[TextContent(text=input), FileReferenceContent(file_id=file_id)],
-    )
-
-
-streaming = False
+    @kernel_function(description="Provides the price of the requested menu item.")
+    def get_item_price(
+        self, menu_item: Annotated[str, "The name of the menu item."]
+    ) -> Annotated[str, "Returns the price of the menu item."]:
+        return "$9.99"
 
 
 # A helper method to invoke the agent with the user input
-async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, message: ChatMessageContent) -> None:
+async def invoke_agent(agent: ChatCompletionAgent, input: str, chat: ChatHistory) -> None:
     """Invoke the agent with the user input."""
-    await agent.add_chat_message(thread_id=thread_id, message=message)
+    chat.add_user_message(input)
 
-    print(f"# {AuthorRole.USER}: '{message.items[0].text}'")
+    print(f"# {AuthorRole.USER}: '{input}'")
 
     if streaming:
-        first_chunk = True
-        async for content in agent.invoke_stream(thread_id=thread_id):
-            if content.role != AuthorRole.TOOL:
-                if first_chunk:
-                    print(f"# {content.role}: ", end="", flush=True)
-                    first_chunk = False
-                print(content.content, end="", flush=True)
-        print()
+        contents = []
+        content_name = ""
+        async for content in agent.invoke_stream(chat):
+            content_name = content.name
+            contents.append(content)
+        message_content = "".join([content.content for content in contents])
+        print(f"# {content.role} - {content_name or '*'}: '{message_content}'")
+        chat.add_assistant_message(message_content)
     else:
-        async for content in agent.invoke(thread_id=thread_id):
-            if content.role != AuthorRole.TOOL:
-                print(f"# {content.role}: {content.content}")
+        async for content in agent.invoke(chat):
+            print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
+        chat.add_message(content)
 
 
 async def main():
@@ -76,60 +74,33 @@ async def main():
     kernel = Kernel()
 
     service_id = "agent"
-
-    openAIClient: AsyncOpenAI = AsyncOpenAI(
+    chat_completion_service = AzureChatCompletion(
+        deployment_name=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),  
         api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-        base_url=os.getenv("AZURE_OPENAI_BASE_URL")
+        endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"), # Used to point to your service
+        service_id=service_id, # Optional; for targeting specific services within Semantic Kernel
+    )
+    kernel.add_service(chat_completion_service)
+
+    settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
+    # Configure the function choice behavior to auto invoke kernel functions
+    settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
+
+    kernel.add_plugin(MenuPlugin(), plugin_name="menu")
+
+    # Create the agent
+    agent = ChatCompletionAgent(
+        service_id="agent", kernel=kernel, name=HOST_NAME, instructions=HOST_INSTRUCTIONS, execution_settings=settings
     )
 
-    # kernel.add_service(chat_completion_service)
-    
-    # Create the Assistant Agent
-    agent = await OpenAIAssistantAgent.create(
-        kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS, 
-        ai_model_id=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"), 
-        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-        client= openAIClient
-    )
+    # Define the chat history
+    chat = ChatHistory()
 
-    cat_image_file_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        "resources",
-        "cat.jpg",
-    )
-
-    # Upload the file for use with the assistant
-    file_id = await agent.add_file(cat_image_file_path, purpose="vision")
-
-    # Create a thread for the conversation
-    thread_id = await agent.create_thread()
-
-    try:
-        await invoke_agent(
-            agent,
-            thread_id=thread_id,
-            message=create_message_with_image_url(
-                "Describe this image.",
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/New_york_times_square-terabass.jpg/1200px-New_york_times_square-terabass.jpg",
-            ),
-        )
-        await invoke_agent(
-            agent,
-            thread_id=thread_id,
-            message=create_message_with_image_url(
-                "What is the main color in this image?",
-                "https://upload.wikimedia.org/wikipedia/commons/5/56/White_shark.jpg",
-            ),
-        )
-        await invoke_agent(
-            agent,
-            thread_id=thread_id,
-            message=create_message_with_image_reference("Is there an animal in this image?", file_id),
-        )
-    finally:
-        await agent.delete_file(file_id)
-        await agent.delete_thread(thread_id)
-        await agent.delete()
+    # Respond to user input
+    await invoke_agent(agent, "Hello", chat)
+    await invoke_agent(agent, "What is the special soup?", chat)
+    await invoke_agent(agent, "What is the special drink?", chat)
+    await invoke_agent(agent, "Thank you", chat)
 
 
 if __name__ == "__main__":
