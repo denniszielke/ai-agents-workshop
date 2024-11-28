@@ -66,9 +66,7 @@ IMAGE_NAME="${AZURE_CONTAINER_REGISTRY_NAME}.azurecr.io/$SERVICE_NAME:$IMAGE_TAG
 
 echo "deploying image: $IMAGE_NAME"
 
-SERVICE_NAME="06-agents-reports-lg"
 SERVICE_NAME=$(echo "${SERVICE_NAME//-}")
-SERVICE_NAME=$(echo "${SERVICE_NAME:2}")
 
 URI=$(az deployment group create -g $RESOURCE_GROUP -f ./infra/app/web.bicep \
           -p name=$SERVICE_NAME -p location=$LOCATION -p containerAppsEnvironmentName=$ENVIRONMENT_NAME \
