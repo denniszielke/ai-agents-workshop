@@ -15,6 +15,8 @@ python -m streamlit run app.py --server.port=8000
 
 The objective is to learn how to solve complex problems using a single agent patterns by iterating over mulitple tools in an interactive user scenario.
 
+![process](./image.png)
+
 ## Tasks:
 
 - Add more tools to the code and tune the prompt so that the model can use multiple tools in a chain of input/ outputs

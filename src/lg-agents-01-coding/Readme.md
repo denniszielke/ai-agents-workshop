@@ -15,6 +15,8 @@ python -m streamlit run app.py --server.port=8000
 
 The objective is to learn how to solve complex problems using a structured guided multi agent collaboration.
 
+![process](./diagram.png)
+
 ## Tasks:
 
 - Add an additional validation step where you rate the code quality using some KPIs (like length of a method, number of variables) in a numeric number.

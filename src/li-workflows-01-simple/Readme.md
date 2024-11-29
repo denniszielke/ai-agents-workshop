@@ -26,6 +26,10 @@ llamactl run --deployment QuickStart --arg message 'Hello from my shell!'
 
 The objective is to learn how to set up a simple event driven workflow
 
+![process](./image.png)
+
+External reference: https://github.com/run-llama/llama_deploy/tree/main/examples/quick_start 
+
 ## Tasks:
 
 - Run the sample to get familar with events

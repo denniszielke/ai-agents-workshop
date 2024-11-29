@@ -15,5 +15,9 @@ python app.py
 
 The objective is to learn how to set up agent to agent discussion
 
+![process](./image.png)
+
+External reference: https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-chat?pivots=programming-language-csharp
+
 ## Tasks:
 

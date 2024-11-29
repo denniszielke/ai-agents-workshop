@@ -26,6 +26,8 @@ llamactl run --deployment QuickStart --arg message 'Hello from my shell!'
 
 The objective is to learn how to set up a custom event driven flow
 
+![process](./image.png)
+
 ## Tasks:
 
 - Enhance the metadata of the workflow
