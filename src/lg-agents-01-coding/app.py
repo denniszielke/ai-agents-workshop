@@ -47,7 +47,7 @@ def create_session(st: st) -> None:
         print("started new session: " + st.session_state["session_id"])
         st.write("You are running in session: " + st.session_state["session_id"])
 
-tracer = setup_tracing()
+# tracer = setup_tracing()
 create_session(st)
 
 if "chat_history" not in st.session_state:
@@ -246,26 +246,26 @@ if human_query is not None and human_query != "":
     with st.chat_message("Human"):
         st.markdown(human_query)
 
-    with tracer.start_as_current_span("agent-chain") as span:
-        for event in app.stream(inputs, config):       
-            print ("message: ")
-            for value in event.values():
-                print("streaming")
+    # with tracer.start_as_current_span("agent-chain") as span:
+    for event in app.stream(inputs, config):       
+        print ("message: ")
+        for value in event.values():
+            print("streaming")
 
-                if ( value["messages"].__len__() > 0 ):
-                    for message in value["messages"]:
-                        if (message.content.__len__() > 0):
-                            if (message.id in messages):
-                                continue
+            if ( value["messages"].__len__() > 0 ):
+                for message in value["messages"]:
+                    if (message.content.__len__() > 0):
+                        if (message.id in messages):
+                            continue
 
-                            messages[message.id] = True
+                        messages[message.id] = True
 
-                            if ( isinstance(message, AIMessage) ):
-                                with st.chat_message("AI"):
-                                    st.write(message.content)
-                            elif ( isinstance(message, SystemMessage) ):
-                                with st.chat_message("human"):
-                                    st.write(message.content)
-                            else:
-                                with st.chat_message("Agent"):
-                                    st.write(message.content)
+                        if ( isinstance(message, AIMessage) ):
+                            with st.chat_message("AI"):
+                                st.write(message.content)
+                        elif ( isinstance(message, SystemMessage) ):
+                            with st.chat_message("human"):
+                                st.write(message.content)
+                        else:
+                            with st.chat_message("Agent"):
+                                st.write(message.content)
