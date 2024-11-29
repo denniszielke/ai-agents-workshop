@@ -41,18 +41,17 @@ class ClipboardAccess:
 REVIEWER_NAME = "Reviewer"
 COPYWRITER_NAME = "Writer"
 
-
 def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
-    kernel = Kernel()
     chat_completion_service = AzureChatCompletion(
         deployment_name=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),  
         api_key=os.getenv("AZURE_OPENAI_API_KEY"),
         endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"), # Used to point to your service
         service_id=service_id, # Optional; for targeting specific services within Semantic Kernel
     )
+
+    kernel = Kernel()
     kernel.add_service(chat_completion_service)
     return kernel
-
 
 async def main():
     agent_reviewer = ChatCompletionAgent(
