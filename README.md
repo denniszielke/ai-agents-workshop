@@ -54,3 +54,4 @@ The scope of this workshop covers the following scenarios and technology stacks:
 | [sk-agents-01-collaboration](./src/sk-agents-01-collaboration/Readme.md) | Simple mult agent discussion | Semantic kernel, Azure OpenAI |
 | [sk-agents-02-tools](./src/sk-agents-02-tools/Readme.md) | Using tools from agents | Semantic kernel, Azure OpenAI |
 | [sk-agents-03-creative](./src/sk-agents-03-creative/Readme.md) | Multi-turn multi agent discussion | Semantic kernel, Azure OpenAI |
+| [sk-agents-04-process](./src/sk-agents-04-process/Readme.md) | Event driven flow | Semantic kernel, Azure OpenAI |
