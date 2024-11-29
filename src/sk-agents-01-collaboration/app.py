@@ -41,33 +41,13 @@ class ClipboardAccess:
 REVIEWER_NAME = "Reviewer"
 COPYWRITER_NAME = "Writer"
 
-import openai
-import httpx
-
 def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
-    # it seems codespaces messes with the proxy settings
-    if "CODESPACES" in os.environ:
-        ahttp_client = httpx.AsyncClient()
-        client = openai.AsyncAzureOpenAI(
-            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-            api_version="2024-10-01-preview",
-            http_client=ahttp_client,
-        )
-        chat_completion_service = AzureChatCompletion(
-            deployment_name=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),  
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-            endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"), # Used to point to your service
-            service_id=service_id, # Optional; for targeting specific services within Semantic Kernel
-            async_client=client,
-        )
-    else:
-        chat_completion_service = AzureChatCompletion(
-            deployment_name=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),  
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-            endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"), # Used to point to your service
-            service_id=service_id, # Optional; for targeting specific services within Semantic Kernel
-        )
+    chat_completion_service = AzureChatCompletion(
+        deployment_name=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),  
+        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+        endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"), # Used to point to your service
+        service_id=service_id, # Optional; for targeting specific services within Semantic Kernel
+    )
 
     kernel = Kernel()
     kernel.add_service(chat_completion_service)
