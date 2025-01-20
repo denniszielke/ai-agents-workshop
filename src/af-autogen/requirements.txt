@@ -1,0 +1,9 @@
+python-dotenv==1.0.1
+azure-ai-projects
+azure-identity
+openai
+azure-ai-ml
+azure-identity==1.19.0
+autogen-core==0.4.2
+autogen-agentchat==0.4.2
+autogen-ext[openai,azure]==0.4.2

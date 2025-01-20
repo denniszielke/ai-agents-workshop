@@ -33,40 +33,18 @@ if "session_id" not in st.session_state:
     st.write("You are running in session: " + st.session_state["session_id"])
 
 llm: AzureChatOpenAI = None
-
-from openai import DefaultHttpxClient
-import httpx
-http_client=DefaultHttpxClient()
-ahttp_client=httpx.AsyncClient()
-
 if "AZURE_OPENAI_API_KEY" in os.environ:
-
-    # it seems codespaces messes with the proxy settings
-    if "CODESPACES" in os.environ:
-        llm = AzureChatOpenAI(
-            http_client=http_client,
-            http_async_client=ahttp_client,
-            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-            azure_deployment=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),
-            openai_api_version=os.getenv("AZURE_OPENAI_VERSION"),
-            temperature=0,
-            streaming=True
-        )
-    else:
-        llm = AzureChatOpenAI(
-            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-            azure_deployment=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),
-            openai_api_version=os.getenv("AZURE_OPENAI_VERSION"),
-            temperature=0,
-            streaming=True
-        )
+    llm = AzureChatOpenAI(
+        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+        azure_deployment=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),
+        openai_api_version=os.getenv("AZURE_OPENAI_VERSION"),
+        temperature=0,
+        streaming=True
+    )
 else:
     token_provider = get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
     llm = AzureChatOpenAI(
-        http_client=http_client,
-        http_async_client=ahttp_client,
         azure_ad_token_provider=token_provider,
         azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
         azure_deployment=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),
@@ -76,6 +54,20 @@ else:
         streaming=True
     )
     
+@tool
+def get_current_username(input: str) -> str:
+    "Get the username of the current user."
+    return "Dennis"
+
+@tool
+def get_current_location(username: str) -> str:
+    "Get the current timezone location of the user for a given username."
+    print(username)
+    if "Dennis" in username:
+        return "Europe/Berlin"
+    else:
+        return "America/New_York"
+
 @tool
 def get_current_time(location: str) -> str:
     "Get the current time in the given location. The pytz is used to get the timezone for that location. Location names should be in a format like America/Seattle, Asia/Bangkok, Europe/London. Anything in Germany should be Europe/Berlin"

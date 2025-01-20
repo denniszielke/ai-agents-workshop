@@ -47,7 +47,7 @@ def create_session(st: st) -> None:
         print("started new session: " + st.session_state["session_id"])
         st.write("You are running in session: " + st.session_state["session_id"])
 
-# tracer = setup_tracing()
+tracer = setup_tracing()
 create_session(st)
 
 if "chat_history" not in st.session_state:
@@ -55,31 +55,14 @@ if "chat_history" not in st.session_state:
 
 model: AzureChatOpenAI = None
 if "AZURE_OPENAI_API_KEY" in os.environ:
-    # it seems codespaces messes with the proxy settings
-    if "CODESPACES" in os.environ:
-        from openai import DefaultHttpxClient
-        import httpx
-        http_client=DefaultHttpxClient()
-        ahttp_client=httpx.AsyncClient()
-        model = AzureChatOpenAI(
-            http_client=http_client,
-            http_async_client=ahttp_client,
-            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-            azure_deployment=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),
-            openai_api_version=os.getenv("AZURE_OPENAI_VERSION"),
-            temperature=0,
-            streaming=False
-        )
-    else:
-        model = AzureChatOpenAI(
-            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-            azure_deployment=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),
-            openai_api_version=os.getenv("AZURE_OPENAI_VERSION"),
-            temperature=0,
-            streaming=False
-        )
+    model = AzureChatOpenAI(
+        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+        azure_deployment=os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),
+        openai_api_version=os.getenv("AZURE_OPENAI_VERSION"),
+        temperature=0,
+        streaming=False
+    )
 else:
     token_provider = get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
     model = AzureChatOpenAI(
@@ -246,26 +229,26 @@ if human_query is not None and human_query != "":
     with st.chat_message("Human"):
         st.markdown(human_query)
 
-    # with tracer.start_as_current_span("agent-chain") as span:
-    for event in app.stream(inputs, config):       
-        print ("message: ")
-        for value in event.values():
-            print("streaming")
+    with tracer.start_as_current_span("agent-chain") as span:
+        for event in app.stream(inputs, config):       
+            print ("message: ")
+            for value in event.values():
+                print("streaming")
 
-            if ( value["messages"].__len__() > 0 ):
-                for message in value["messages"]:
-                    if (message.content.__len__() > 0):
-                        if (message.id in messages):
-                            continue
+                if ( value["messages"].__len__() > 0 ):
+                    for message in value["messages"]:
+                        if (message.content.__len__() > 0):
+                            if (message.id in messages):
+                                continue
 
-                        messages[message.id] = True
+                            messages[message.id] = True
 
-                        if ( isinstance(message, AIMessage) ):
-                            with st.chat_message("AI"):
-                                st.write(message.content)
-                        elif ( isinstance(message, SystemMessage) ):
-                            with st.chat_message("human"):
-                                st.write(message.content)
-                        else:
-                            with st.chat_message("Agent"):
-                                st.write(message.content)
+                            if ( isinstance(message, AIMessage) ):
+                                with st.chat_message("AI"):
+                                    st.write(message.content)
+                            elif ( isinstance(message, SystemMessage) ):
+                                with st.chat_message("human"):
+                                    st.write(message.content)
+                            else:
+                                with st.chat_message("Agent"):
+                                    st.write(message.content)
