@@ -46,6 +46,8 @@ The scope of this workshop covers the following scenarios and technology stacks:
 
 | Name | Description | Technology  |
 | :-- | :--| :-- |
+| [af-simple](./src/af-simple/code-run.py) | Single Agent | AgentService, RAG |
+| [af-autogen](./src/af-autogen/simple.py) | Single Agent | AgentService, Autogen |
 | [lc-react-tools](./src/lc-react-tools/Readme.md) | Single Agent | Streamlit, Azure OpenAI, Langchain |
 | [lg-agents-01-coding](./src/lg-agents-01-coding/Readme.md) | Multi-agent code reviews | LangGraph, Azure OpenAI, Otel |
 | [lg-agents-02-shop](./src/lg-agents-02-shop/Readme.md) | Human in the loop | LangGraph, Qdrant, Azure OpenAI |
